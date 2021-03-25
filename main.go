@@ -15,7 +15,7 @@ var cNetwork = p2p_matrix.Network{NodeFactory: func(n p2p_matrix.NodeInstance) p
 func main() {
 	fmt.Println("running test")
 
-	cNetwork.RunScript("/home/mark/IdeaProjects/p2p_matrix/storage/scripts/new_small.json", "")
+	cNetwork.RunScript("/home/mark/IdeaProjects/p2p_matrix/storage/scripts/test_big_1k.json", "")
 
 }
 
@@ -83,6 +83,7 @@ func (n *MyNode) Activate(bootstrap int) {
 	}
 
 	if bootstrap != -2 {
+
 		// this node is in charge of keeping it's bootstrapper up to date
 		n.Bootstrapper = bootstrap
 
@@ -133,42 +134,6 @@ func (n *MyNode) Listen(from int, message string) {
 			n.NetworkSendWrite(from, el, data)
 		}
 
-		//else if message == "ping" {
-		//n.addPeer(from)
-
-		//else if message == "give_me_your_files" {
-		//
-		//	//if len(n.Storage) == 0 {
-		//	//	for _, node := range n.Peers {
-		//	//		n.NetworkSendString(node, "give_me_your_files")
-		//	//	}
-		//	//}
-		//
-		//	jsonString, err := json.Marshal(n.Storage)
-		//	if err != nil {
-		//		panic(err)
-		//	}
-		//
-		//	for _, node := range n.Peers {
-		//		n.NetworkSendString(node, "f"+string(jsonString))
-		//	}
-		//}
-		//else if message[0] == 'f' {
-		//
-		//	var results map[int]float64
-		//	err := json.Unmarshal([]byte(message[1:]), &results)
-		//	if err != nil {
-		//		panic(err)
-		//	}
-		//
-		//	for el, val := range results {
-		//
-		//		n.Write(0, el, val)
-		//	}
-		//	//n.Storage = results
-		//
-		//}
-
 	} else {
 
 		var results []int
@@ -192,30 +157,6 @@ func (n *MyNode) Listen(from int, message string) {
 			n.NetworkSendString(node, string(jsonString))
 		}
 
-		//
-		//
-		//if len(n.Peers) == 1 {
-		//	for _, el := range results {
-		//		n.NetworkSendString(el, "give_me_your_files")
-		//
-		//	}
-		//
-		//}
-		//
-
-		//
-		//if !added {
-		//	return
-		//}
-		//
-		//jsonString, err := json.Marshal(n.Peers)
-		//if err != nil {
-		//	panic(err)
-		//}
-		//
-		//for _, node := range n.Peers {
-		//	n.NetworkSendString(node, string(jsonString))
-		//}
 	}
 }
 
@@ -228,32 +169,22 @@ func (n MyNode) Read(from int, file int) float64 {
 		}
 	}
 
-	//n.addPeer(from)
-	//
-	//if from == 0 {
-	//
-	//	for key, val := range n.Storage {
-	//		if key == file {
-	//			return val
-	//		}
-	//	}
-	//
-	//	for _, peer := range n.Peers {
-	//		if data := n.NetworkSendRead(peer, file); data != 0 {
-	//			return data
-	//		}
-	//	}
-	//	return 0
-	//} else {
-	//	if val, ok := n.Storage[file]; ok {
-	//		return val
-	//	} else {
-	//		return 0
-	//	}
-	//}
 	return 0
 }
 
+/*
+Sig:
+213005.21219999684
+9702
+
+Sig:
+213005.21219999678
+9702
+
+213005.2121999969
+9702
+
+*/
 // todo make sure we use pointer when we want to change the object
 // todo wtf
 func (n *MyNode) Write(from int, file int, data float64) {

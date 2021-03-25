@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"strconv"
 )
 
@@ -111,9 +112,9 @@ func runStory(script ScriptModel, network Network) {
 					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
 					//}
 
-					//rand.Shuffle(len(activeNodes), func(i, j int){
-					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
-					//})
+					rand.Shuffle(len(activeNodes), func(i, j int) {
+						activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
+					})
 
 					// create the node
 					allNodes[action.Node] = newNode(network, script, action.Node, networkAdapter)
@@ -123,8 +124,14 @@ func runStory(script ScriptModel, network Network) {
 						allNodes[action.Node].Activate(-1)
 					} else {
 						// get random node to bootstrap from
+						minus := 1
+						bNode := action.Node
+						for bNode == action.Node {
+							bNode = activeNodes[len(activeNodes)-minus]
+							minus++
+						}
 
-						allNodes[action.Node].Activate(activeNodes[len(activeNodes)-2])
+						allNodes[action.Node].Activate(bNode)
 					}
 
 				} else {
@@ -168,21 +175,6 @@ func runStory(script ScriptModel, network Network) {
 
 			}
 		}
-
-		// 23 has 82
-		// 82 has
-		if id == -2 {
-			for _, node := range activeNodes {
-				fmt.Print(strconv.Itoa(node) + " ")
-				fmt.Print(allNodes[node].SysGetPeers())
-				fmt.Print(" ")
-				fmt.Println(allNodes[node].SysGetStorage())
-				//
-			}
-			return
-		}
-
-		// todo: fix an example DHT algorithm & finish the runner + adapter limitations + statistics
 
 	}
 
