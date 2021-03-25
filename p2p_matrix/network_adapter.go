@@ -1,19 +1,20 @@
 package p2p_matrix
 
 type NetworkAdapter struct {
-	sendString func(int, int, string)
-	sendRead   func(int, int) float64
-	sendWrite  func(int, int, float64)
+	sendString func(NodeInstance, int, string) bool
+	sendRead   func(NodeInstance, int, int) (bool, float64)
+	sendWrite  func(NodeInstance, int, int, float64) bool
 }
 
-func (n NetworkAdapter) SendString(from int, to int, data string) {
-	n.sendString(from, to, data)
+func (n NetworkAdapter) SendString(node NodeInstance, to int, data string) bool {
+
+	return n.sendString(node, to, data)
 }
 
-func (n NetworkAdapter) SendRead(user int, file int) float64 {
-	return n.sendRead(user, file)
+func (n NetworkAdapter) SendRead(node NodeInstance, user int, file int) (bool, float64) {
+	return n.sendRead(node, user, file)
 }
 
-func (n NetworkAdapter) SendWrite(user int, file int, data float64) {
-	n.sendWrite(user, file, data)
+func (n NetworkAdapter) SendWrite(node NodeInstance, user int, file int, data float64) bool {
+	return n.sendWrite(node, user, file, data)
 }

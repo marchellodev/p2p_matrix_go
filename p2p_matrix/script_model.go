@@ -25,13 +25,19 @@ type File struct {
 }
 
 type StoryElement struct {
-	NodeActions map[int]string                `json:"nodeActions"`
-	Operations  map[int]StoryElementOperation `json:"operations"`
+	NodeActions []StoryElementAction    `json:"nodeActions"`
+	Operations  []StoryElementOperation `json:"operations"`
 }
 
 type StoryElementOperation struct {
+	Node int    `json:"nodeId"`
 	File int    `json:"fileId"`
 	Type string `json:"type"`
+}
+
+type StoryElementAction struct {
+	Node   int    `json:"nodeId"`
+	Action string `json:"action"`
 }
 
 type Pings struct {
