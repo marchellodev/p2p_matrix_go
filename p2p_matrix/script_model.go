@@ -16,8 +16,9 @@ type ScriptModel struct {
 }
 
 type Node struct {
-	Location int     `json:"location"`
-	Speed    float64 `json:"speed"`
+	Location  int     `json:"location"`
+	Speed     float64 `json:"speed"`
+	Bootstrap int     `json:"bootstrap"`
 }
 
 type File struct {

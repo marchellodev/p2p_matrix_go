@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"strconv"
 )
 
 type Network struct {
@@ -33,11 +31,21 @@ func newNode(n Network, script ScriptModel, id int, adapter NetworkAdapter) Node
 	})
 }
 
-func runStory(script ScriptModel, network Network) {
+func runStory(script ScriptModel, network Network) ResultData {
+
+	resultData := ResultData{}
 
 	allNodes := make(map[int]NodeInstanceInterface)
 	var activeNodes []int
 
+	// profiling
+	var currentOperationConnections []int
+	var currentOperation StoryElementOperation
+	var currentOperationTime float64
+	readRight := 0
+	readWrong := 0
+
+	// here we need to know what is going on in the network: reading, writing and detailed info
 	var networkAdapter NetworkAdapter
 	networkAdapter.sendString = func(from NodeInstance, to int, data string) bool {
 		active := false
@@ -66,7 +74,32 @@ func runStory(script ScriptModel, network Network) {
 			return false, 0
 		}
 
-		return true, allNodes[to].Read(from.Id, file)
+		if currentOperation.Type == "read" {
+			// means that we are communicating with other nodes when reading
+			currentOperationConnections = append(currentOperationConnections, to)
+		}
+
+		// here we need to calculate how much time the request will take
+
+		fileData := allNodes[to].Read(from.Id, file)
+
+		networkSpeed := (script.Nodes[from.Id].Speed + script.Nodes[to].Speed) / 2
+
+		location1 := script.Nodes[from.Id].Location
+		location2 := script.Nodes[to].Location
+		var ping float64
+
+		for _, pair := range script.Pings.Pings {
+			if (pair.Location1 == location1 && pair.Location2 == location2) || (pair.Location1 == location2 && pair.Location2 == location1) {
+				ping = pair.Ping
+				break
+			}
+		}
+
+		time := fileData/networkSpeed + (ping / 1000)
+		currentOperationTime += time
+
+		return true, fileData
 	}
 	networkAdapter.sendWrite = func(from NodeInstance, to int, file int, size float64) bool {
 		active := false
@@ -100,6 +133,7 @@ func runStory(script ScriptModel, network Network) {
 				for key := range allNodes {
 					if key == action.Node {
 						exists = true
+						break
 					}
 				}
 
@@ -112,9 +146,9 @@ func runStory(script ScriptModel, network Network) {
 					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
 					//}
 
-					rand.Shuffle(len(activeNodes), func(i, j int) {
-						activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
-					})
+					//rand.Shuffle(len(activeNodes), func(i, j int) {
+					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
+					//})
 
 					// create the node
 					allNodes[action.Node] = newNode(network, script, action.Node, networkAdapter)
@@ -124,14 +158,14 @@ func runStory(script ScriptModel, network Network) {
 						allNodes[action.Node].Activate(-1)
 					} else {
 						// get random node to bootstrap from
-						minus := 1
-						bNode := action.Node
-						for bNode == action.Node {
-							bNode = activeNodes[len(activeNodes)-minus]
-							minus++
-						}
+						//minus := 1
+						//bNode := action.Node
+						//for bNode == action.Node {
+						//	bNode = activeNodes[len(activeNodes)-minus]
+						//	minus++
+						//}
 
-						allNodes[action.Node].Activate(bNode)
+						allNodes[action.Node].Activate(script.Nodes[action.Node].Bootstrap)
 					}
 
 				} else {
@@ -151,60 +185,36 @@ func runStory(script ScriptModel, network Network) {
 		}
 
 		for _, operation := range storyElement.Operations {
+			currentOperationConnections = []int{}
+			currentOperationTime = 0
+
+			currentOperation = operation
+
 			if operation.Type == "write" {
 				allNodes[operation.Node].Write(-1, operation.File, script.Files[operation.File].Size)
 				// todo check if the node is active ?
 			} else {
-				read := allNodes[operation.Node].Read(0, operation.File)
-				if read != script.Files[operation.File].Size {
-					fmt.Println("FUCK YOU")
-					fmt.Println(operation.File)
-					fmt.Println(read)
-					fmt.Println(script.Files[operation.File].Size)
-					fmt.Println(operation.Node)
-
-					for node, _ := range allNodes {
-						fmt.Print(strconv.Itoa(node) + " ")
-						fmt.Print(allNodes[node].SysGetStorage())
-						fmt.Print(" ")
-						fmt.Println(allNodes[node].SysGetPeers())
-						//
-					}
-					return
+				read := allNodes[operation.Node].Read(-1, operation.File)
+				if read == script.Files[operation.File].Size {
+					readRight++
+				} else {
+					readWrong++
 				}
 
+				resultData.WriteOperation(currentOperation, currentOperationConnections)
+				resultData.WriteOperationTime(currentOperation, currentOperationTime)
+
 			}
+
+			currentOperation = StoryElementOperation{}
 		}
 
+		resultData.WriteStorage(id, allNodes)
 	}
 
-	/*
+	resultData.FileNotFound = float64(readWrong) / (float64(readWrong) + float64(readRight))
 
-	 */
-	fmt.Println("Running Done")
-	//fmt.Println(activeNodes)
-	//
-	var storage float64
-	var peers int
-	//
-	for _, node := range allNodes {
-		st := node.SysGetStorage()
-		for _, el := range st {
-			storage += el
-		}
-
-		peers += len(node.SysGetPeers())
-		//sum += node.SysGetStorage()
-
-		//fmt.Print(strconv.Itoa(id) + " ")
-		//fmt.Println(node.SysGetStorage())
-	}
-	// 2.4172943228197068e+07
-	// 2.4172943228196982e+07
-	fmt.Println("Sig:")
-	fmt.Println(storage)
-	fmt.Println(peers)
-
+	return resultData
 }
 
 func remove(s []int, obj int) []int {
@@ -219,11 +229,13 @@ func remove(s []int, obj int) []int {
 	return s[:len(s)-1]
 }
 
-func (n Network) RunScript(scriptPath string, ResultPath string) {
+func (n Network) RunScript(scriptPath string, resultPath string) {
 
 	script := deserializeScriptFile(scriptPath)
 
-	runStory(script, n)
+	result := runStory(script, n)
+
+	result.SaveToJson(resultPath)
 
 	//var adapter = NetworkAdapter{
 	//	sendString: func(i int, s string) {

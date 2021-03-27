@@ -1,6 +1,7 @@
 package main
 
 // todo write all errors to the log file
+// todo round all floats
 import (
 	"C"
 	"encoding/json"
@@ -15,7 +16,7 @@ var cNetwork = p2p_matrix.Network{NodeFactory: func(n p2p_matrix.NodeInstance) p
 func main() {
 	fmt.Println("running test")
 
-	cNetwork.RunScript("/home/mark/IdeaProjects/p2p_matrix/storage/scripts/test_big_1k.json", "")
+	cNetwork.RunScript("/home/mark/IdeaProjects/p2p_matrix/storage/scripts/f2.json", "result.json")
 
 }
 
@@ -59,6 +60,7 @@ func (n *MyNode) addPeer(peers ...int) bool {
 		for _, el := range n.Peers {
 			if el == peer {
 				exists = true
+				break
 			}
 		}
 
@@ -83,8 +85,6 @@ func (n *MyNode) Activate(bootstrap int) {
 	}
 
 	if bootstrap != -2 {
-
-		// this node is in charge of keeping it's bootstrapper up to date
 		n.Bootstrapper = bootstrap
 
 		n.addPeer(bootstrap)
@@ -162,6 +162,14 @@ func (n *MyNode) Listen(from int, message string) {
 
 // todo wtf
 func (n MyNode) Read(from int, file int) float64 {
+
+	if from != -1 {
+		return 0
+	}
+
+	for _, node := range n.Peers {
+		n.NetworkSendRead(node, file)
+	}
 
 	for el, val := range n.Storage {
 		if el == file {
