@@ -157,15 +157,6 @@ func (n *MyNode) Listen(from int, message string) {
 }
 
 func (n MyNode) Read(from int, file int) float64 {
-
-	if from != -1 {
-		return 0
-	}
-
-	for _, node := range n.Peers {
-		n.NetworkSendRead(node, file)
-	}
-
 	for el, val := range n.Storage {
 		if el == file {
 			return val
