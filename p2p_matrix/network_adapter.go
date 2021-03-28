@@ -7,7 +7,6 @@ type NetworkAdapter struct {
 }
 
 func (n NetworkAdapter) SendString(node NodeInstance, to int, data string) bool {
-
 	return n.sendString(node, to, data)
 }
 

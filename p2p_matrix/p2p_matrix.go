@@ -3,7 +3,6 @@ package p2p_matrix
 import "C"
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -117,12 +116,7 @@ func runStory(script ScriptModel, network Network) ResultData {
 		return true
 	}
 
-	//networkAdapter.sendString = func(a int, b string) {}
-	// todo
-
 	for id, storyElement := range script.Story {
-
-		fmt.Println(id)
 
 		for _, action := range storyElement.NodeActions {
 
@@ -140,31 +134,12 @@ func runStory(script ScriptModel, network Network) ResultData {
 				activeNodes = append(activeNodes, action.Node)
 
 				if !exists {
-
-					//for i := range activeNodes {
-					//	j := rand.Intn(i + 1)
-					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
-					//}
-
-					//rand.Shuffle(len(activeNodes), func(i, j int) {
-					//	activeNodes[i], activeNodes[j] = activeNodes[j], activeNodes[i]
-					//})
-
 					// create the node
 					allNodes[action.Node] = newNode(network, script, action.Node, networkAdapter)
 
 					if len(activeNodes) == 1 {
-
 						allNodes[action.Node].Activate(-1)
 					} else {
-						// get random node to bootstrap from
-						//minus := 1
-						//bNode := action.Node
-						//for bNode == action.Node {
-						//	bNode = activeNodes[len(activeNodes)-minus]
-						//	minus++
-						//}
-
 						allNodes[action.Node].Activate(script.Nodes[action.Node].Bootstrap)
 					}
 
@@ -172,14 +147,8 @@ func runStory(script ScriptModel, network Network) ResultData {
 					allNodes[action.Node].Activate(-2)
 				}
 
-				//if id == 0 {
-				//	fmt.Println("on 0")
-				//}
-				//network.NodeInstance.Activate(id)
 			} else {
-				//if id == 0 {
-				//	fmt.Println("off 0")
-				//}
+
 				activeNodes = remove(activeNodes, action.Node)
 			}
 		}
@@ -192,7 +161,7 @@ func runStory(script ScriptModel, network Network) ResultData {
 
 			if operation.Type == "write" {
 				allNodes[operation.Node].Write(-1, operation.File, script.Files[operation.File].Size)
-				// todo check if the node is active ?
+
 			} else {
 				read := allNodes[operation.Node].Read(-1, operation.File)
 				if read == script.Files[operation.File].Size {
@@ -237,38 +206,7 @@ func (n Network) RunScript(scriptPath string, resultPath string) {
 
 	result.SaveToJson(resultPath)
 
-	//var adapter = NetworkAdapter{
-	//	sendString: func(i int, s string) {
-	//
-	//	},
-	//	sendRead: func(i int, i2 int) float64 {
-	//		return 0
-	//	},
-	//	sendWrite: func(i int, i2 int, f float64) {
-	//
-	//	},
-	//}
-	//
-	//fmt.Println(adapter)
-
-	//n.Activate(0, adapter)
-
-	//data, err := ioutil.ReadFile(script)
-
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	//fmt.Println(data)
-
-	//d1 := []byte("hello\ngo\n")
-	//err := ioutil.WriteFile(path, d1, 0644)
-	//if err != nil {
-	//	panic(err)
-	//}
 }
-
-// new stuff
 
 type NodeInstanceInterface interface {
 

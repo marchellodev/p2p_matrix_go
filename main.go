@@ -5,7 +5,6 @@ package main
 import (
 	"C"
 	"encoding/json"
-	"fmt"
 	"p2p_matrix_go/p2p_matrix"
 )
 
@@ -14,10 +13,8 @@ var cNetwork = p2p_matrix.Network{NodeFactory: func(n p2p_matrix.NodeInstance) p
 }}
 
 func main() {
-	fmt.Println("running test")
-
-	cNetwork.RunScript("/home/mark/IdeaProjects/p2p_matrix/storage/scripts/f2.json", "result.json")
-
+	//running a test script
+	cNetwork.RunScript("script_example.json", "result.json")
 }
 
 //export GetModelName
@@ -105,7 +102,6 @@ func (n *MyNode) Activate(bootstrap int) {
 
 }
 
-// todo make sure there are no two nodes with the same id
 func (n *MyNode) Listen(from int, message string) {
 
 	if message == "give_me_your_peers" {
@@ -160,7 +156,6 @@ func (n *MyNode) Listen(from int, message string) {
 	}
 }
 
-// todo wtf
 func (n MyNode) Read(from int, file int) float64 {
 
 	if from != -1 {
@@ -180,29 +175,13 @@ func (n MyNode) Read(from int, file int) float64 {
 	return 0
 }
 
-/*
-Sig:
-213005.21219999684
-9702
-
-Sig:
-213005.21219999678
-9702
-
-213005.2121999969
-9702
-
-*/
-// todo make sure we use pointer when we want to change the object
-// todo wtf
 func (n *MyNode) Write(from int, file int, data float64) {
 
 	alreadyHave := false
 
-	for el, _ := range n.Storage {
+	for el := range n.Storage {
 		if el == file {
 			alreadyHave = true
-			// todo use brake for performance reasons
 			break
 		}
 	}
@@ -217,26 +196,6 @@ func (n *MyNode) Write(from int, file int, data float64) {
 		}
 	}
 
-	//n.addPeer(from)
-	//
-	//if n.Storage == nil {
-	//	n.Storage = make(map[int]float64)
-	//}
-	//
-	//for key, _ := range n.Storage {
-	//	if key == file {
-	//		return
-	//	}
-	//}
-	//
-	//n.Storage[file] = data
-	//
-	//// todo check if already exists
-	//
-	//for _, peer := range n.Peers {
-	//	n.NetworkSendWrite(peer, file, data)
-	//}
-
 }
 
 func (n MyNode) SysGetPeers() []int {
@@ -244,11 +203,5 @@ func (n MyNode) SysGetPeers() []int {
 }
 
 func (n MyNode) SysGetStorage() map[int]float64 {
-	//var result float64
-	//
-	//for _, size := range n.Storage {
-	//	result += size
-	//}
-
 	return n.Storage
 }

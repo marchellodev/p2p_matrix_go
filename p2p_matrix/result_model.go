@@ -6,51 +6,6 @@ import (
 	"io/ioutil"
 )
 
-/*
-class HistoryModel {
-  final String scriptName;
-  final String modelName;
-  final int scriptOperations;
-  final int scriptNodes;
-  final DateTime modelCreated;
-  final double modelSize;
-  final DateTime historyDate;
-
-  final HistoryStats timeToAcquireDate;
-  final HistoryStats amountOfUsedNodes; //doing next
-  final HistoryStats usedMemory; //done
-  final double dataNotFound;
-
-  final String fileName;
-
-  final List<int> used;
-  final List<double> mem;
-  final List<double> time;
-
-  HistoryModel({
-    @required this.scriptName,
-    @required this.scriptNodes,
-    @required this.scriptOperations,
-    @required this.modelName,
-    @required this.modelCreated,
-    @required this.modelSize,
-    @required this.historyDate,
-    @required this.timeToAcquireDate,
-    @required this.amountOfUsedNodes,
-    @required this.usedMemory,
-    @required this.dataNotFound,
-    @required this.fileName,
-    @required this.used,
-    @required this.mem,
-    @required this.time,
-  });
-
-  factory HistoryModel.fromJson(Map<String, dynamic> json) => _$HistoryModelFromJson(json);
-
-  Map<String, dynamic> toJson() => _$HistoryModelToJson(this);
-}
-
-*/
 type ResultData struct {
 	StorageHistory      []ResultStorageStep `json:"storageHistory"`
 	StorageHistoryStats StatsData           `json:"storageHistoryStats"`
@@ -64,12 +19,6 @@ type ResultData struct {
 	FileNotFound float64 `json:"fileNotFound"`
 }
 
-/*
-final double average;
-  final double median;
-  final double range;
-  final double standardDeviation;
-*/
 type StatsData struct {
 	Average           float64 `json:"average"`
 	Median            float64 `json:"median"`
@@ -126,7 +75,7 @@ func (result *ResultData) WriteOperationTime(operation StoryElementOperation, ti
 }
 
 func (result *ResultData) computeStats() {
-	// calculating storage
+
 	func() {
 		var elements []float64
 		for _, el := range result.StorageHistory {
@@ -146,8 +95,6 @@ func (result *ResultData) computeStats() {
 			StandardDeviation: standardDeviation,
 		}
 	}()
-
-	//
 
 	func() {
 
@@ -201,49 +148,5 @@ func (result ResultData) SaveToJson(path string) {
 		panic(err)
 	}
 
-	ioutil.WriteFile(path, jsonString, 0644)
-
+	_ = ioutil.WriteFile(path, jsonString, 0644)
 }
-
-//class HistoryModel {
-//final String scriptName;
-//final String modelName;
-//final int scriptOperations;
-//final int scriptNodes;
-//final DateTime modelCreated;
-//final double modelSize;
-//final DateTime historyDate;
-//
-//final HistoryStats timeToAcquireDate;
-//final HistoryStats amountOfUsedNodes;
-//final HistoryStats usedMemory;
-//final double dataNotFound;
-//
-//final String fileName;
-//
-//final List<int> used;
-//final List<double> mem;
-//final List<double> time;
-//
-//HistoryModel({
-//@required this.scriptName,
-//@required this.scriptNodes,
-//@required this.scriptOperations,
-//@required this.modelName,
-//@required this.modelCreated,
-//@required this.modelSize,
-//@required this.historyDate,
-//@required this.timeToAcquireDate,
-//@required this.amountOfUsedNodes,
-//@required this.usedMemory,
-//@required this.dataNotFound,
-//@required this.fileName,
-//@required this.used,
-//@required this.mem,
-//@required this.time,
-//});
-//
-//factory HistoryModel.fromJson(Map<String, dynamic> json) => _$HistoryModelFromJson(json);
-//
-//Map<String, dynamic> toJson() => _$HistoryModelToJson(this);
-//}
